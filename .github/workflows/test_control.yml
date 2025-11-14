@@ -1,0 +1,30 @@
+name: Manual Test Runner
+
+on:
+  workflow_dispatch:   # 允许你手动运行
+
+jobs:
+  test:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Test Power ON
+        if: github.event.inputs.action == 'on'
+        run: node scripts/power_on.js
+
+      - name: Test Power OFF
+        if: github.event.inputs.action == 'off'
+        run: node scripts/power_off.js
