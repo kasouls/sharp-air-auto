@@ -1,4 +1,5 @@
 const { chromium } = require("playwright");
+const fs = require("fs");
 
 (async () => {
   console.log("Launching browser...");
@@ -6,57 +7,38 @@ const { chromium } = require("playwright");
   const page = await browser.newPage();
 
   const LOGIN_URL = "https://cocoromembers.jp.sharp/sic-front/member/A050101ViewAction.do";
+
   console.log("Opening:", LOGIN_URL);
 
   await page.goto(LOGIN_URL, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
     timeout: 60000
   });
 
-  console.log("Waiting for email field...");
+  // 打印当前真实 URL
+  console.log("Current URL after redirect:", page.url());
 
-  await page.waitForSelector('input#loginId', { timeout: 30000 });
-  await page.fill('input#loginId', process.env.SHARP_EMAIL);
+  // 保存 HTML 方便分析
+  const html = await page.content();
+  console.log("========== PAGE HTML (first 2000 chars) ==========");
+  console.log(html.substring(0, 2000));
+  console.log("===================================================");
 
-  console.log("Filling password...");
-  await page.fill('input#password', process.env.SHARP_PW);
+  // 尝试查找输入框
+  console.log("Trying to find loginId input...");
+  const emailExists = await page.$('input#loginId');
 
-  console.log("Clicking login...");
-  await page.click('#loginBtn');
-
-  // 等待登录完成
-  await page.waitForNavigation({
-    waitUntil: "networkidle",
-    timeout: 60000
-  });
-
-  console.log("Logged in. Navigating to device list...");
-
-  await page.goto("https://cocoromembers.jp.sharp/cmc-front/air/airList", {
-    waitUntil: "networkidle"
-  });
-
-  console.log("Waiting for device card...");
-
-  await page.waitForSelector(".css-18t9a0r", { timeout: 30000 });
-
-  const firstDevice = await page.$(".css-18t9a0r");
-  if (!firstDevice) {
-    console.log("❌ 没找到设备卡片！");
+  if (!emailExists) {
+    console.log("❌ loginId input NOT found!");
     await browser.close();
     return;
   }
 
-  console.log("Opening device page...");
-  await firstDevice.click();
+  console.log("Found login form, filling...");
+  await page.fill('input#loginId', process.env.SHARP_EMAIL);
+  await page.fill('input#password', process.env.SHARP_PW);
+  await page.click('#loginBtn');
 
-  console.log("Waiting for power button...");
-  await page.waitForSelector('div[role="button"]', { timeout: 30000 });
-
-  console.log("Toggling power...");
-  await page.click('div[role="button"]');
-
-  console.log("✔ Done!");
-
-  await browser.close();
+  await page.waitForNavigation({ waitUntil: "networkidle", timeout: 60000 });
+  console.log("Logged in!");
 })();
