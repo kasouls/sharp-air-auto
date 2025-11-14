@@ -1,0 +1,25 @@
+name: Power On Sharp Air Cleaner
+
+on:
+  workflow_dispatch:    # 手动执行
+  schedule:
+    - cron: "0 1 * * *"  # 每天上午10:00（JST +9）
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install browsers
+      run: npx playwright install --with-deps
+
+    - name: Run power_on script
+      run: npm run power_on
+      env:
+        SHARP_EMAIL: ${{ secrets.SHARP_EMAIL }}
+        SHARP_PW: ${{ secrets.SHARP_PW }}

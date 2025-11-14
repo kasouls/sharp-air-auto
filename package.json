@@ -1,0 +1,12 @@
+{
+  "name": "sharp-air-auto",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "power_on": "node scripts/power_on.js"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  }
+}
