@@ -1,0 +1,23 @@
+name: Power Toggle Sharp Air Cleaner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install browsers
+        run: npx playwright install --with-deps
+
+      - name: Run power toggle script
+        env:
+          SHARP_EMAIL: ${{ secrets.SHARP_EMAIL }}
+          SHARP_PW: ${{ secrets.SHARP_PW }}
+        run: node scripts/power_toggle.js
